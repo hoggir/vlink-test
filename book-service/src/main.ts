@@ -1,19 +1,109 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { AppModule } from './app.module';
+import helmet from 'helmet';
+import compression from 'compression';
+import { ConfigService } from '@nestjs/config';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { AllExceptionsFilter } from './common/filters/http-exception.filter';
+import { Model } from 'mongoose';
+import { ErrorLog } from './common/database/schemas/error-log.schema';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Global prefix untuk semua routes
+  const configService = app.get(ConfigService);
+  const port = configService.get('PORT', 3000);
+
   app.setGlobalPrefix('api');
 
-  // API Versioning
   app.enableVersioning({
     type: VersioningType.URI,
     defaultVersion: '1',
   });
 
-  await app.listen(process.env.PORT ?? 3000);
+  app.use(helmet());
+
+  app.enableCors({
+    origin: configService.get('CORS_ORIGIN', '*'),
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  });
+
+  app.use(compression());
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
+      disableErrorMessages: configService.get('NODE_ENV') === 'production', // Hide error details di production
+    }),
+  );
+
+  if (configService.get('NODE_ENV') !== 'production') {
+    const config = new DocumentBuilder()
+      .setTitle('Book Service API Documentation')
+      .setDescription('Complete REST API documentation for book application.')
+      .setVersion('1.0')
+      .setContact('Book Support', 'https://book.com', 'support@book.com')
+      .setLicense('MIT', 'https://opensource.org/licenses/MIT')
+      .addBearerAuth(
+        {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          name: 'JWT',
+          description: 'Enter JWT token',
+          in: 'header',
+        },
+        'JWT-auth',
+      )
+      .addTag(
+        'Authentication',
+        'Authentication endpoints for login, register, and token management',
+      )
+      .addTag('Users', 'User management endpoints')
+      .addTag('Book', 'Book management and monitoring endpoints')
+      .addServer('http://localhost:8080', 'Nginx Gateway')
+      .addServer(`http://localhost:${port}`, 'Local Development')
+      .build();
+
+    const document = SwaggerModule.createDocument(app, config, {
+      deepScanRoutes: true,
+    });
+
+    SwaggerModule.setup('api/docs', app, document, {
+      swaggerOptions: {
+        persistAuthorization: true,
+        docExpansion: 'none',
+        filter: true,
+        showRequestDuration: true,
+        syntaxHighlight: {
+          theme: 'monokai',
+        },
+      },
+      customSiteTitle: 'Book API Docs',
+      customCss: '.swagger-ui .topbar { display: none }',
+    });
+
+    console.log(
+      `📚 Swagger documentation available at: http://localhost:${port}/api/docs`,
+    );
+  }
+
+  app.enableShutdownHooks();
+
+  const errorLogModel = app.get<Model<ErrorLog>>('ErrorLogModel');
+  app.useGlobalFilters(new AllExceptionsFilter(errorLogModel));
+  await app.listen(port);
+  console.log(`🚀 Application is running on: http://localhost:${port}/api`);
 }
-bootstrap();
+bootstrap().catch((err) => {
+  console.error('❌ Error starting application:', err);
+  process.exit(1);
+});
