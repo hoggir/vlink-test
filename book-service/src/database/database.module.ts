@@ -1,7 +1,7 @@
 import { Module, Global } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigService } from '@nestjs/config';
-import { DatabaseService } from './database.service';
+import { PrismaService } from './prisma.service';
 import {
   ErrorLog,
   ErrorLogSchema,
@@ -13,16 +13,16 @@ import {
     MongooseModule.forRootAsync({
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => {
-        const uri = configService.get<string>('database.uri');
-        const options = configService.get('database.options');
+        const uri = configService.get<string>('database.mongoUri');
+        const options = configService.get('database.mongoOptions');
 
         return {
-          uri,
+          uri: uri || process.env.MONGODB_URI,
           ...options,
-          dbName: 'book',
+          dbName: 'book_logs',
           connectionFactory: (connection) => {
             connection.on('connected', () => {
-              console.log('✅ MongoDB connected successfully');
+              console.log('✅ MongoDB connected successfully (Error Logs)');
             });
 
             connection.on('disconnected', () => {
@@ -33,9 +33,6 @@ import {
               console.error('❌ MongoDB connection error:', error);
             });
 
-            if (process.env.NODE_ENV !== 'production') {
-            }
-
             return connection;
           },
         };
@@ -45,7 +42,7 @@ import {
       { name: ErrorLog.name, schema: ErrorLogSchema },
     ]),
   ],
-  providers: [DatabaseService],
-  exports: [DatabaseService],
+  providers: [PrismaService],
+  exports: [PrismaService],
 })
 export class DatabaseModule {}

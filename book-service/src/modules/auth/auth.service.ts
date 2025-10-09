@@ -7,12 +7,15 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import type { Request } from 'express';
 import * as bcrypt from 'bcrypt';
 import { UsersRepository } from '../users/users.repository';
+import { SessionService } from './services/session.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
-import { User } from '../users/schemas/user.schema';
-import { decrypt, encrypt } from 'src/common/utils/crypto.util';
+import { User, UserRole } from '../users/entities/user.entity';
+import { encrypt } from 'src/common/utils/crypto.util';
+import { getDeviceInfoString } from 'src/common/utils/device.util';
 
 @Injectable()
 export class AuthService {
@@ -20,9 +23,10 @@ export class AuthService {
     private readonly usersRepository: UsersRepository,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly sessionService: SessionService,
   ) {}
 
-  async register(registerDto: RegisterDto) {
+  async register(registerDto: RegisterDto, req: Request) {
     try {
       const existingUser = await this.usersRepository.findByEmail(
         registerDto.email,
@@ -36,11 +40,24 @@ export class AuthService {
       const user = await this.usersRepository.create({
         ...registerDto,
         email: registerDto.email.toLowerCase(),
-        role: registerDto?.role ? registerDto.role.toLowerCase() : 'customer',
+        role: registerDto?.role
+          ? (registerDto.role.toUpperCase() as UserRole)
+          : UserRole.CUSTOMER,
         password: hashedPassword,
-      } as Partial<User>);
+      });
 
       const tokens = await this.generateTokens(user);
+      const deviceInfo = getDeviceInfoString(req);
+
+      // Store session in Redis
+      await this.sessionService.createSession(
+        user.id,
+        user.email,
+        user.role,
+        tokens.accessToken,
+        tokens.refreshToken,
+        deviceInfo,
+      );
 
       await this.updateRefreshToken(user.id, tokens.refreshToken);
 
@@ -48,7 +65,7 @@ export class AuthService {
         message: 'Registration successful',
         data: {
           user: {
-            id: encrypt(user.id),
+            id: encrypt(user.id.toString()),
             name: user.name,
             email: user.email,
             role: user.role,
@@ -58,7 +75,6 @@ export class AuthService {
         },
       };
     } catch (error) {
-      console.log('🚀 ~ AuthService ~ register ~ error:', error);
       if (error instanceof HttpException) {
         throw error;
       }
@@ -66,7 +82,7 @@ export class AuthService {
     }
   }
 
-  async login(loginDto: LoginDto) {
+  async login(loginDto: LoginDto, req: Request) {
     const user = await this.usersRepository.findByEmailWithPassword(
       loginDto.email,
     );
@@ -89,6 +105,17 @@ export class AuthService {
     }
 
     const tokens = await this.generateTokens(user);
+    const deviceInfo = getDeviceInfoString(req);
+
+    // Store session in Redis (will automatically invalidate old session)
+    await this.sessionService.createSession(
+      user.id,
+      user.email,
+      user.role,
+      tokens.accessToken,
+      tokens.refreshToken,
+      deviceInfo,
+    );
 
     await Promise.all([
       this.updateRefreshToken(user.id, tokens.refreshToken),
@@ -99,7 +126,7 @@ export class AuthService {
       message: 'Login successful',
       data: {
         user: {
-          id: encrypt(user.id),
+          id: encrypt(user.id.toString()),
           name: user.name,
           email: user.email,
           role: user.role,
@@ -142,7 +169,11 @@ export class AuthService {
     }
   }
 
-  async logout(userId: string) {
+  async logout(userId: number) {
+    // Invalidate session in Redis
+    await this.sessionService.invalidateSession(userId);
+
+    // Clear refresh token in database
     await this.updateRefreshToken(userId, null);
 
     return {
@@ -151,7 +182,7 @@ export class AuthService {
     };
   }
 
-  async validateUser(userId: string): Promise<User> {
+  async validateUser(userId: number): Promise<User> {
     const user = await this.usersRepository.findById(userId);
 
     if (!user || !user.isActive) {
@@ -204,7 +235,7 @@ export class AuthService {
   }
 
   private async updateRefreshToken(
-    userId: string,
+    userId: number,
     refreshToken: string | null,
   ): Promise<void> {
     const hashedRefreshToken = refreshToken

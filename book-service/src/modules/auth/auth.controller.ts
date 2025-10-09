@@ -5,6 +5,7 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  Req,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -13,6 +14,7 @@ import {
   ApiBearerAuth,
   ApiBody,
 } from '@nestjs/swagger';
+import type { Request } from 'express';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -59,8 +61,8 @@ export class AuthController {
     description: 'Email already exists',
     type: ErrorResponseDto,
   })
-  async register(@Body() registerDto: RegisterDto) {
-    return this.authService.register(registerDto);
+  async register(@Body() registerDto: RegisterDto, @Req() req: Request) {
+    return this.authService.register(registerDto, req);
   }
 
   @Public()
@@ -87,8 +89,8 @@ export class AuthController {
     description: 'Invalid credentials or account deactivated',
     type: ErrorResponseDto,
   })
-  async login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto);
+  async login(@Body() loginDto: LoginDto, @Req() req: Request) {
+    return this.authService.login(loginDto, req);
   }
 
   @Public()
@@ -132,7 +134,7 @@ export class AuthController {
     description: 'User successfully logged out',
     type: LogoutResponseDto,
   })
-  async logout(@CurrentUser('userId') userId: string) {
+  async logout(@CurrentUser('userId') userId: number) {
     return this.authService.logout(userId);
   }
 

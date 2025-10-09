@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import databaseConfig from './config/database.config';
+import authConfig from './config/auth.config';
 import { DatabaseModule } from './database/database.module';
+import { RedisModule } from './common/redis/redis.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { ThrottlerModule } from '@nestjs/throttler';
@@ -12,7 +14,7 @@ import { CustomThrottlerGuard } from './common/guards/custom-throttler.guard';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [databaseConfig],
+      load: [databaseConfig, authConfig],
       envFilePath: ['.env'],
     }),
     ThrottlerModule.forRoot([
@@ -22,6 +24,7 @@ import { CustomThrottlerGuard } from './common/guards/custom-throttler.guard';
       },
     ]),
     DatabaseModule,
+    RedisModule,
     AuthModule,
     UsersModule,
   ],

@@ -11,8 +11,8 @@ import {
 } from 'class-validator';
 
 enum UserRole {
-  ADMIN = 'admin',
-  CUSTOMER = 'customer',
+  ADMIN = 'ADMIN',
+  CUSTOMER = 'CUSTOMER',
 }
 
 export class RegisterDto {

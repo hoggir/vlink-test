@@ -12,7 +12,7 @@ export class User extends BaseSchema {
   @Prop({ required: true, select: false })
   password: string;
 
-  @Prop({ default: 'admin', enum: ['customer', 'admin'] })
+  @Prop({ default: 'CUSTOMER', enum: ['CUSTOMER', 'ADMIN'] })
   role: string;
 
   @Prop({ default: true })
