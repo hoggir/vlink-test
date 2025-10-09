@@ -49,7 +49,6 @@ export class AuthService {
       const tokens = await this.generateTokens(user);
       const deviceInfo = getDeviceInfoString(req);
 
-      // Store session in Redis
       await this.sessionService.createSession(
         user.id,
         user.email,
@@ -107,7 +106,6 @@ export class AuthService {
     const tokens = await this.generateTokens(user);
     const deviceInfo = getDeviceInfoString(req);
 
-    // Store session in Redis (will automatically invalidate old session)
     await this.sessionService.createSession(
       user.id,
       user.email,
@@ -170,10 +168,8 @@ export class AuthService {
   }
 
   async logout(userId: number) {
-    // Invalidate session in Redis
     await this.sessionService.invalidateSession(userId);
 
-    // Clear refresh token in database
     await this.updateRefreshToken(userId, null);
 
     return {

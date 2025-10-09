@@ -6,6 +6,9 @@ import { DatabaseModule } from './database/database.module';
 import { RedisModule } from './common/redis/redis.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
+import { BooksModule } from './modules/books/books.module';
+import { CheckoutsModule } from './modules/checkouts/checkouts.module';
+import { ReportsModule } from './modules/reports/reports.module';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { CustomThrottlerGuard } from './common/guards/custom-throttler.guard';
@@ -27,6 +30,9 @@ import { CustomThrottlerGuard } from './common/guards/custom-throttler.guard';
     RedisModule,
     AuthModule,
     UsersModule,
+    BooksModule,
+    CheckoutsModule,
+    ReportsModule,
   ],
   controllers: [],
   providers: [

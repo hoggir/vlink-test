@@ -101,7 +101,6 @@ export class UsersController {
     },
   })
   async getProfile(@CurrentUser() user: any, @Req() req: Request) {
-    // Extract and validate token from request header
     const authHeader = req.headers.authorization;
     if (!authHeader) {
       throw new UnauthorizedException('No authorization header');
@@ -109,7 +108,6 @@ export class UsersController {
 
     const token = authHeader.replace('Bearer ', '');
 
-    // Double check: validate token exists in current session
     const session = await this.sessionService.getSession(user.userId);
     if (!session || session.accessToken !== token) {
       throw new UnauthorizedException(
@@ -172,7 +170,6 @@ export class UsersController {
     type: ErrorResponseDto,
   })
   async checkSessionStatus(@CurrentUser() user: any, @Req() req: Request) {
-    // Extract token from request header
     const authHeader = req.headers.authorization;
     if (!authHeader) {
       throw new UnauthorizedException('No authorization header');
@@ -180,7 +177,6 @@ export class UsersController {
 
     const token = authHeader.replace('Bearer ', '');
 
-    // Validate token exists in current session
     const session = await this.sessionService.getSession(user.userId);
     if (!session || session.accessToken !== token) {
       throw new UnauthorizedException(
@@ -188,7 +184,6 @@ export class UsersController {
       );
     }
 
-    // Check if session is active
     const isActive = await this.sessionService.hasActiveSession(user.userId);
 
     return {
