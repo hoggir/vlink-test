@@ -20,6 +20,7 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Public } from '../auth/decorators/public.decorator';
 import { ErrorResponseDto } from '../../common/dto/error-response.dto';
 import { SessionService } from '../auth/services/session.service';
+import { encryptId } from '../../common/utils/crypto.util';
 
 @ApiTags('Users')
 @Controller('users')
@@ -119,6 +120,7 @@ export class UsersController {
       message: 'Profile retrieved',
       data: {
         ...user,
+        userId: encryptId(user.userId),
         sessionInfo: {
           deviceInfo: session.deviceInfo,
           loginAt: session.loginAt,
@@ -190,7 +192,7 @@ export class UsersController {
       message: 'Session is active',
       data: {
         isActive,
-        userId: session.userId,
+        userId: encryptId(session.userId),
         email: session.email,
         role: session.role,
         deviceInfo: session.deviceInfo,
@@ -240,7 +242,10 @@ export class UsersController {
   adminOnly(@CurrentUser() user: any) {
     return {
       message: 'Admin access',
-      data: user,
+      data: {
+        ...user,
+        userId: encryptId(user.userId),
+      },
     };
   }
 }

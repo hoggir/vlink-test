@@ -9,7 +9,6 @@ import {
   UseGuards,
   HttpStatus,
   Query,
-  ParseIntPipe,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -26,6 +25,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { ErrorResponseDto } from '../../common/dto/error-response.dto';
+import { DecryptIdPipe } from '../../common/pipes/decrypt-id.pipe';
 
 @ApiTags('Books (Admin Only)')
 @Controller('books')
@@ -139,8 +139,9 @@ export class BooksController {
   })
   @ApiParam({
     name: 'id',
-    description: 'Book ID',
-    example: 1,
+    type: 'string',
+    description: 'Book ID (encrypted)',
+    example: 'dGVzdGVuY3J5cHRlZGlk...',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -151,8 +152,9 @@ export class BooksController {
     description: 'Book not found',
     type: ErrorResponseDto,
   })
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.booksService.findOne(id);
+  findOne(@Param('id', DecryptIdPipe) id: string) {
+    const decryptId = +id;
+    return this.booksService.findOne(decryptId);
   }
 
   @Patch(':id')
@@ -162,8 +164,9 @@ export class BooksController {
   })
   @ApiParam({
     name: 'id',
-    description: 'Book ID',
-    example: 1,
+    type: 'string',
+    description: 'Book ID (encrypted)',
+    example: 'dGVzdGVuY3J5cHRlZGlk...',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -180,10 +183,11 @@ export class BooksController {
     type: ErrorResponseDto,
   })
   update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', DecryptIdPipe) id: string,
     @Body() updateBookDto: UpdateBookDto,
   ) {
-    return this.booksService.update(id, updateBookDto);
+    const decryptId = +id;
+    return this.booksService.update(decryptId, updateBookDto);
   }
 
   @Patch(':id/stock')
@@ -193,8 +197,9 @@ export class BooksController {
   })
   @ApiParam({
     name: 'id',
-    description: 'Book ID',
-    example: 1,
+    type: 'string',
+    description: 'Book ID (encrypted)',
+    example: 'dGVzdGVuY3J5cHRlZGlk...',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -211,10 +216,11 @@ export class BooksController {
     type: ErrorResponseDto,
   })
   updateStock(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', DecryptIdPipe) id: string,
     @Body() updateStockDto: UpdateStockDto,
   ) {
-    return this.booksService.updateStock(id, updateStockDto);
+    const decryptId = +id;
+    return this.booksService.updateStock(decryptId, updateStockDto);
   }
 
   @Delete(':id')
@@ -224,8 +230,9 @@ export class BooksController {
   })
   @ApiParam({
     name: 'id',
-    description: 'Book ID',
-    example: 1,
+    type: 'string',
+    description: 'Book ID (encrypted)',
+    example: 'dGVzdGVuY3J5cHRlZGlk...',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -236,7 +243,8 @@ export class BooksController {
     description: 'Book not found',
     type: ErrorResponseDto,
   })
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.booksService.remove(id);
+  remove(@Param('id', DecryptIdPipe) id: string) {
+    const decryptId = +id;
+    return this.booksService.remove(decryptId);
   }
 }

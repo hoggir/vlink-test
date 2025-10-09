@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { QueryReportDto } from './dto/query-report.dto';
+import { encryptId } from 'src/common/utils/crypto.util';
 
 @Injectable()
 export class ReportsService {
@@ -53,6 +54,7 @@ export class ReportsService {
 
     const booksWithRevenue = books.map((book) => ({
       ...book,
+      id: encryptId(book.id),
       revenue: Number(book.price) * book.soldCount,
       pricePerUnit: Number(book.price),
     }));
@@ -119,6 +121,7 @@ export class ReportsService {
 
     const booksWithRevenue = books.map((book) => ({
       ...book,
+      id: encryptId(book.id),
       revenue: Number(book.price) * book.soldCount,
       pricePerUnit: Number(book.price),
     }));
@@ -150,9 +153,14 @@ export class ReportsService {
       },
     });
 
+    const encryptedBooks = books.map((book) => ({
+      ...book,
+      id: encryptId(book.id),
+    }));
+
     return {
       message: 'Low stock books retrieved successfully',
-      data: books,
+      data: encryptedBooks,
     };
   }
 

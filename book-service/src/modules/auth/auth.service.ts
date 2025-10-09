@@ -14,7 +14,7 @@ import { SessionService } from './services/session.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { User, UserRole } from '../users/entities/user.entity';
-import { encrypt } from 'src/common/utils/crypto.util';
+import { encryptId } from 'src/common/utils/crypto.util';
 import { getDeviceInfoString } from 'src/common/utils/device.util';
 
 @Injectable()
@@ -64,7 +64,7 @@ export class AuthService {
         message: 'Registration successful',
         data: {
           user: {
-            id: encrypt(user.id.toString()),
+            id: encryptId(user.id),
             name: user.name,
             email: user.email,
             role: user.role,
@@ -124,7 +124,7 @@ export class AuthService {
       message: 'Login successful',
       data: {
         user: {
-          id: encrypt(user.id.toString()),
+          id: encryptId(user.id),
           name: user.name,
           email: user.email,
           role: user.role,

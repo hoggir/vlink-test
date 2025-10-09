@@ -8,6 +8,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { Model } from 'mongoose';
 import { ErrorLog } from './common/database/schemas/error-log.schema';
+import { getModelToken } from '@nestjs/mongoose';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -15,7 +16,9 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const port = configService.get('PORT', 3000);
 
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix('api', {
+    exclude: ['health'],
+  });
 
   app.enableVersioning({
     type: VersioningType.URI,
@@ -41,7 +44,7 @@ async function bootstrap() {
       transformOptions: {
         enableImplicitConversion: true,
       },
-      disableErrorMessages: configService.get('NODE_ENV') === 'production', // Hide error details di production
+      disableErrorMessages: configService.get('NODE_ENV') === 'production',
     }),
   );
 
@@ -63,12 +66,6 @@ async function bootstrap() {
         },
         'JWT-auth',
       )
-      .addTag(
-        'Authentication',
-        'Authentication endpoints for login, register, and token management',
-      )
-      .addTag('Users', 'User management endpoints')
-      .addTag('Book', 'Book management and monitoring endpoints')
       .addServer('http://localhost:8080', 'Nginx Gateway')
       .addServer(`http://localhost:${port}`, 'Local Development')
       .build();
@@ -98,8 +95,9 @@ async function bootstrap() {
 
   app.enableShutdownHooks();
 
-  const errorLogModel = app.get<Model<ErrorLog>>('ErrorLogModel');
+  const errorLogModel = app.get<Model<ErrorLog>>(getModelToken(ErrorLog.name));
   app.useGlobalFilters(new AllExceptionsFilter(errorLogModel));
+
   await app.listen(port);
   console.log(`🚀 Application is running on: http://localhost:${port}/api`);
 }

@@ -58,16 +58,35 @@ export class AllExceptionsFilter implements ExceptionFilter {
       exception instanceof Error ? exception.stack : exception,
     );
 
+    const user = (request as any).user;
+
     this.errorLogModel
       .create({
-        path: request.url,
-        method: request.method,
-        statusCode: status,
-        error: error,
-        message,
-        stack: exception instanceof Error ? exception.stack : null,
-        meta: {
-          body: request.body,
+        level: 'error',
+        message:
+          typeof message === 'string' ? message : JSON.stringify(message),
+        error:
+          exception instanceof Error
+            ? {
+                name: exception.name,
+                message: exception.message,
+                stack: exception.stack,
+              }
+            : {
+                name: error,
+                message:
+                  typeof message === 'string'
+                    ? message
+                    : JSON.stringify(message),
+              },
+        context: {
+          userId: user?.userId,
+          path: request.url,
+          method: request.method,
+          statusCode: status,
+          userAgent: request.headers['user-agent'],
+          ip: request.ip || request.socket.remoteAddress,
+          body: this.sanitizeBody(request.body),
           query: request.query,
           params: request.params,
         },
@@ -87,5 +106,29 @@ export class AllExceptionsFilter implements ExceptionFilter {
       error: error,
       message: message,
     });
+  }
+
+  private sanitizeBody(body: any): any {
+    if (!body || typeof body !== 'object') {
+      return body;
+    }
+
+    const sanitized = { ...body };
+    const sensitiveFields = [
+      'password',
+      'token',
+      'secret',
+      'apiKey',
+      'accessToken',
+      'refreshToken',
+    ];
+
+    for (const field of sensitiveFields) {
+      if (field in sanitized) {
+        sanitized[field] = '***REDACTED***';
+      }
+    }
+
+    return sanitized;
   }
 }

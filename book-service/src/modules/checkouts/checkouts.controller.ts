@@ -7,7 +7,6 @@ import {
   Body,
   UseGuards,
   HttpStatus,
-  ParseIntPipe,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -23,6 +22,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { ErrorResponseDto } from '../../common/dto/error-response.dto';
+import { DecryptIdPipe } from '../../common/pipes/decrypt-id.pipe';
+import { DecryptQueryIdPipe } from '../../common/pipes/decrypt-query-id.pipe';
 
 @ApiTags('Checkouts (Admin Only)')
 @Controller('checkouts')
@@ -110,7 +111,7 @@ export class CheckoutsController {
     description: 'Only admin users can access this endpoint',
     type: ErrorResponseDto,
   })
-  findAll(@Query() query: QueryCheckoutDto) {
+  findAll(@Query(new DecryptQueryIdPipe('userId')) query: QueryCheckoutDto) {
     return this.checkoutsService.findAll(query);
   }
 
@@ -169,8 +170,8 @@ export class CheckoutsController {
   })
   @ApiParam({
     name: 'id',
-    description: 'Checkout ID',
-    example: 1,
+    description: 'Checkout ID (encrypted)',
+    example: 'dGVzdGVuY3J5cHRlZGlk...',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -181,7 +182,7 @@ export class CheckoutsController {
     description: 'Checkout not found',
     type: ErrorResponseDto,
   })
-  findOne(@Param('id', ParseIntPipe) id: number) {
+  findOne(@Param('id', DecryptIdPipe) id: number) {
     return this.checkoutsService.findOne(id);
   }
 
@@ -192,8 +193,8 @@ export class CheckoutsController {
   })
   @ApiParam({
     name: 'id',
-    description: 'Checkout ID',
-    example: 1,
+    description: 'Checkout ID (encrypted)',
+    example: 'dGVzdGVuY3J5cHRlZGlk...',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -205,7 +206,7 @@ export class CheckoutsController {
     type: ErrorResponseDto,
   })
   updatePaymentStatus(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', DecryptIdPipe) id: number,
     @Body() updatePaymentStatusDto: UpdatePaymentStatusDto,
   ) {
     return this.checkoutsService.updatePaymentStatus(

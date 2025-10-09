@@ -8,6 +8,7 @@ import { BooksRepository } from './books.repository';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto, UpdateStockDto } from './dto/update-book.dto';
 import { QueryBookDto } from './dto/query-book.dto';
+import { encryptId } from 'src/common/utils/crypto.util';
 
 @Injectable()
 export class BooksService {
@@ -34,7 +35,10 @@ export class BooksService {
 
     return {
       message: 'Book created successfully',
-      data: book,
+      data: {
+        ...book,
+        id: encryptId(book.id),
+      },
     };
   }
 
@@ -69,10 +73,15 @@ export class BooksService {
       orderBy: { [sortBy]: sortOrder },
     });
 
+    const encryptedBooks = books.map((book) => ({
+      ...book,
+      id: encryptId(book.id),
+    }));
+
     return {
       message: 'Books retrieved successfully',
       data: {
-        books,
+        books: encryptedBooks,
         pagination: {
           total,
           page,
@@ -92,7 +101,10 @@ export class BooksService {
 
     return {
       message: 'Book retrieved successfully',
-      data: book,
+      data: {
+        ...book,
+        id: encryptId(book.id),
+      },
     };
   }
 
@@ -116,7 +128,10 @@ export class BooksService {
 
     return {
       message: 'Book updated successfully',
-      data: updatedBook,
+      data: {
+        ...updatedBook,
+        id: encryptId(updatedBook.id),
+      },
     };
   }
 
@@ -138,7 +153,10 @@ export class BooksService {
 
     return {
       message: 'Book stock updated successfully',
-      data: updatedBook,
+      data: {
+        ...updatedBook,
+        id: encryptId(updatedBook.id),
+      },
     };
   }
 
