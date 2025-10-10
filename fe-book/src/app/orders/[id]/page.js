@@ -166,30 +166,89 @@ export default function OrderDetailPage() {
               {/* Payment Info */}
               <div className="border-t border-gray-200 pt-6">
                 <h3 className="font-semibold text-gray-900 mb-3">Payment Information</h3>
-                <div className="space-y-2 text-sm">
-                  {order.paymentMethod && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Method:</span>
-                      <span className="font-medium">{order.paymentMethod.replace('_', ' ')}</span>
+
+                {/* Payment Method - Highlighted */}
+                {order.paymentMethod && (
+                  <div className="mb-4 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        {/* Icon based on payment method */}
+                        {order.paymentMethod === 'CREDIT_CARD' && (
+                          <div className="flex-shrink-0 w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center">
+                            <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                            </svg>
+                          </div>
+                        )}
+                        {order.paymentMethod === 'BANK_TRANSFER' && (
+                          <div className="flex-shrink-0 w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                            <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
+                            </svg>
+                          </div>
+                        )}
+                        {order.paymentMethod === 'E_WALLET' && (
+                          <div className="flex-shrink-0 w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
+                            <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          </div>
+                        )}
+
+                        <div>
+                          <p className="text-xs text-gray-600">Payment Method</p>
+                          <p className="font-semibold text-gray-900">
+                            {order.paymentMethod === 'CREDIT_CARD' && 'Credit Card'}
+                            {order.paymentMethod === 'BANK_TRANSFER' && 'Bank Transfer'}
+                            {order.paymentMethod === 'E_WALLET' && 'E-Wallet'}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                        order.paymentStatus === 'PAID'
+                          ? 'bg-green-100 text-green-800'
+                          : order.paymentStatus === 'PENDING'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {order.paymentStatus}
+                      </div>
                     </div>
-                  )}
+                  </div>
+                )}
+
+                {/* Other Payment Info */}
+                <div className="space-y-3 text-sm">
                   {order.paymentReferenceNumber && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Ref Number:</span>
-                      <span className="font-medium">{order.paymentReferenceNumber}</span>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Reference Number:</span>
+                      <span className="font-mono text-xs font-medium bg-gray-100 px-2 py-1 rounded">
+                        {order.paymentReferenceNumber}
+                      </span>
                     </div>
                   )}
                   <div className="flex justify-between">
                     <span className="text-gray-600">Order Date:</span>
                     <span className="font-medium">
-                      {new Date(order.createdAt).toLocaleDateString()}
+                      {new Date(order.createdAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                      })}
                     </span>
                   </div>
                   {order.paidAt && (
                     <div className="flex justify-between">
                       <span className="text-gray-600">Paid At:</span>
-                      <span className="font-medium">
-                        {new Date(order.paidAt).toLocaleDateString()}
+                      <span className="font-medium text-green-600">
+                        {new Date(order.paidAt).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
                       </span>
                     </div>
                   )}
