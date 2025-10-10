@@ -72,7 +72,7 @@ export default function LoginPage() {
       }
 
       // Redirect to home
-      router.push('/');
+      router.push('/book');
     } catch (error) {
       if (error instanceof ApiError) {
         if (error.errors) {
