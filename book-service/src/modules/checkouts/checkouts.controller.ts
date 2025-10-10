@@ -63,6 +63,7 @@ export class CheckoutsController {
                   userId: { type: 'number', example: 1 },
                   totalAmount: { type: 'number', example: 59.97 },
                   paymentStatus: { type: 'string', example: 'PAID' },
+                  paymentMethod: { type: 'string', example: 'CREDIT_CARD', nullable: true },
                   createdAt: {
                     type: 'string',
                     example: '2025-10-09T10:00:00.000Z',

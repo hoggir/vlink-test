@@ -50,6 +50,28 @@ export class CustomerCheckoutController {
   @ApiResponse({
     status: HttpStatus.CREATED,
     description: 'Checkout created successfully',
+    schema: {
+      properties: {
+        success: { type: 'boolean', example: true },
+        statusCode: { type: 'number', example: 201 },
+        message: { type: 'string', example: 'Checkout created successfully. Please proceed with payment.' },
+        data: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', example: 'encrypted_id' },
+            userId: { type: 'string', example: 'encrypted_user_id' },
+            referenceNumber: { type: 'string', example: 'CHK-20251010-ABCD1234' },
+            paymentReferenceNumber: { type: 'string', example: null, nullable: true },
+            totalAmount: { type: 'number', example: 59.97 },
+            paymentStatus: { type: 'string', example: 'PENDING' },
+            paymentMethod: { type: 'string', example: null, nullable: true },
+            createdAt: { type: 'string', example: '2025-10-10T10:00:00.000Z' },
+            updatedAt: { type: 'string', example: '2025-10-10T10:00:00.000Z' },
+          },
+        },
+        timestamp: { type: 'string', example: '2025-10-10T10:00:00.000Z' },
+      },
+    },
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
@@ -79,6 +101,45 @@ export class CustomerCheckoutController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Checkouts retrieved successfully',
+    schema: {
+      properties: {
+        success: { type: 'boolean', example: true },
+        statusCode: { type: 'number', example: 200 },
+        message: { type: 'string', example: 'Checkouts retrieved successfully' },
+        data: {
+          type: 'object',
+          properties: {
+            checkouts: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  id: { type: 'string', example: 'encrypted_id' },
+                  userId: { type: 'string', example: 'encrypted_user_id' },
+                  referenceNumber: { type: 'string', example: 'CHK-20251010-ABCD1234' },
+                  paymentReferenceNumber: { type: 'string', example: 'PAY-20251010-XYZ5678', nullable: true },
+                  totalAmount: { type: 'number', example: 59.97 },
+                  paymentStatus: { type: 'string', example: 'PAID' },
+                  paymentMethod: { type: 'string', example: 'CREDIT_CARD', nullable: true },
+                  createdAt: { type: 'string', example: '2025-10-10T10:00:00.000Z' },
+                  updatedAt: { type: 'string', example: '2025-10-10T10:00:00.000Z' },
+                },
+              },
+            },
+            pagination: {
+              type: 'object',
+              properties: {
+                total: { type: 'number', example: 50 },
+                page: { type: 'number', example: 1 },
+                limit: { type: 'number', example: 10 },
+                totalPages: { type: 'number', example: 5 },
+              },
+            },
+          },
+        },
+        timestamp: { type: 'string', example: '2025-10-10T10:00:00.000Z' },
+      },
+    },
   })
   getUserCheckouts(
     @CurrentUser() user: any,
@@ -108,6 +169,42 @@ export class CustomerCheckoutController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Checkout detail retrieved successfully',
+    schema: {
+      properties: {
+        success: { type: 'boolean', example: true },
+        statusCode: { type: 'number', example: 200 },
+        message: { type: 'string', example: 'Checkout detail retrieved successfully' },
+        data: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', example: 'encrypted_id' },
+            userId: { type: 'string', example: 'encrypted_user_id' },
+            referenceNumber: { type: 'string', example: 'CHK-20251010-ABCD1234' },
+            paymentReferenceNumber: { type: 'string', example: 'PAY-20251010-XYZ5678', nullable: true },
+            totalAmount: { type: 'number', example: 59.97 },
+            paymentStatus: { type: 'string', example: 'PAID' },
+            paymentMethod: { type: 'string', example: 'CREDIT_CARD', nullable: true },
+            createdAt: { type: 'string', example: '2025-10-10T10:00:00.000Z' },
+            updatedAt: { type: 'string', example: '2025-10-10T10:00:00.000Z' },
+            items: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  id: { type: 'string', example: 'encrypted_item_id' },
+                  checkoutId: { type: 'string', example: 'encrypted_checkout_id' },
+                  bookId: { type: 'string', example: 'encrypted_book_id' },
+                  quantity: { type: 'number', example: 2 },
+                  price: { type: 'number', example: 19.99 },
+                  subtotal: { type: 'number', example: 39.98 },
+                },
+              },
+            },
+          },
+        },
+        timestamp: { type: 'string', example: '2025-10-10T10:00:00.000Z' },
+      },
+    },
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
