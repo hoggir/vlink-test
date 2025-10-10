@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function SessionExpiredModal() {
   const router = useRouter();
+  const { logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
@@ -14,9 +16,7 @@ export default function SessionExpiredModal() {
       if (sessionExpired === 'true') {
         // Clear everything and redirect
         sessionStorage.removeItem('sessionExpired');
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('user');
+        logout(); // Use AuthContext logout to clear user state
         router.push('/login');
         return;
       }
@@ -25,16 +25,11 @@ export default function SessionExpiredModal() {
     // Register global function
     if (typeof window !== 'undefined') {
       window.triggerSessionExpired = () => {
-        // Clear localStorage immediately when modal appears
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('user');
+        // Use AuthContext logout to clear everything including user state
+        logout();
 
         // Set flag for refresh detection
         sessionStorage.setItem('sessionExpired', 'true');
-
-        // Trigger storage event to update navbar
-        window.dispatchEvent(new Event('storage'));
 
         setIsOpen(true);
       };
@@ -45,13 +40,15 @@ export default function SessionExpiredModal() {
         window.triggerSessionExpired = null;
       }
     };
-  }, [router]);
+  }, [router, logout]);
 
   const handleGoToLogin = () => {
     setIsOpen(false);
     // Clear session expired flag
     sessionStorage.removeItem('sessionExpired');
-    // Redirect to login (localStorage already cleared when modal appeared)
+    // Ensure logout is called again
+    logout();
+    // Redirect to login
     router.push('/login');
   };
 
