@@ -45,7 +45,8 @@ export class CustomerCheckoutController {
   @ApiOperation({
     summary: 'Create checkout from cart (Customer only)',
     description:
-      'Convert cart items to checkout. Validates stock and creates transaction with race condition protection.',
+      'Convert cart items to checkout. Customer must select payment method during checkout. ' +
+      'Validates stock and creates transaction with race condition protection.',
   })
   @ApiResponse({
     status: HttpStatus.CREATED,
@@ -64,7 +65,7 @@ export class CustomerCheckoutController {
             paymentReferenceNumber: { type: 'string', example: null, nullable: true },
             totalAmount: { type: 'number', example: 59.97 },
             paymentStatus: { type: 'string', example: 'PENDING' },
-            paymentMethod: { type: 'string', example: null, nullable: true },
+            paymentMethod: { type: 'string', example: 'CREDIT_CARD' },
             createdAt: { type: 'string', example: '2025-10-10T10:00:00.000Z' },
             updatedAt: { type: 'string', example: '2025-10-10T10:00:00.000Z' },
           },

@@ -79,6 +79,7 @@ export class CustomerCheckoutService {
             referenceNumber,
             totalAmount: cart.totalAmount,
             paymentStatus: PaymentStatus.PENDING,
+            paymentMethod: createCheckoutDto.paymentMethod,
           },
         });
 

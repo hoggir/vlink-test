@@ -1,13 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsEnum } from 'class-validator';
+import { PaymentMethod } from '@prisma/client';
 
 export class CreateCheckoutDto {
   @ApiProperty({
-    description: 'Payment method (optional)',
+    description: 'Payment method - must be selected when creating checkout',
+    enum: PaymentMethod,
     example: 'CREDIT_CARD',
-    required: false,
+    required: true,
   })
-  @IsOptional()
-  @IsString()
-  paymentMethod?: string;
+  @IsEnum(PaymentMethod, {
+    message: 'Payment method must be one of: CREDIT_CARD, BANK_TRANSFER, E_WALLET, CASH'
+  })
+  paymentMethod: PaymentMethod;
 }
