@@ -1,0 +1,41 @@
+services:
+  # Book Service (Production)
+  book-service:
+    build:
+      context: ./book-service
+      dockerfile: Dockerfile
+      target: production
+    container_name: book-service-prod
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_URL=${DATABASE_URL}
+      - MONGODB_URI=${MONGODB_URI}
+      - MONGODB_DATABASE=${MONGODB_DATABASE:-book-service}
+      - REDIS_URL=${REDIS_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_ACCESS_EXPIRES_IN=${JWT_ACCESS_EXPIRES_IN:-1h}
+      - JWT_REFRESH_EXPIRES_IN=${JWT_REFRESH_EXPIRES_IN:-7d}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - BCRYPT_SALT_ROUNDS=${BCRYPT_SALT_ROUNDS:-10}
+      - CORS_ORIGIN=${CORS_ORIGIN:-*}
+    restart: always
+    networks:
+      - microservices-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1); }).on('error', () => process.exit(1));"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  microservices-network:
+    driver: bridge
+    name: microservices-network
+
+volumes:
+  book-service-cache:
+    driver: local
