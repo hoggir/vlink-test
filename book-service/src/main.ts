@@ -25,7 +25,12 @@ async function bootstrap() {
     defaultVersion: '1',
   });
 
-  app.use(helmet());
+  app.use(
+    helmet({
+      contentSecurityPolicy: false,
+      crossOriginEmbedderPolicy: false,
+    }),
+  );
 
   app.enableCors({
     origin: configService.get('CORS_ORIGIN', '*'),
@@ -66,7 +71,7 @@ async function bootstrap() {
         },
         'JWT-auth',
       )
-      .addServer('http://localhost:8080', 'Nginx Gateway')
+      .addServer(`http://203.175.11.126:${port}`, 'Nginx')
       .addServer(`http://localhost:${port}`, 'Local Development')
       .build();
 
@@ -98,7 +103,7 @@ async function bootstrap() {
   const errorLogModel = app.get<Model<ErrorLog>>(getModelToken(ErrorLog.name));
   app.useGlobalFilters(new AllExceptionsFilter(errorLogModel));
 
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
   console.log(`🚀 Application is running on: http://localhost:${port}/api`);
 }
 bootstrap().catch((err) => {
