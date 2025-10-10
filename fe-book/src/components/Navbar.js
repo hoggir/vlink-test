@@ -36,8 +36,9 @@ export default function Navbar() {
     }
   };
 
-  if (!user) {
-    return null; // Don't show navbar if not logged in
+  // Don't show navbar if not logged in (check both user and token)
+  if (!user || !hasToken) {
+    return null;
   }
 
   return (

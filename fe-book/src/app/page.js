@@ -52,7 +52,7 @@ export default function Home() {
           {user && (
             <div className="mt-10">
               <Link
-                href="/books"
+                href="/shop"
                 className="w-full sm:w-auto px-8 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl md:py-4 md:text-lg md:px-10 inline-block"
               >
                 Browse Books
