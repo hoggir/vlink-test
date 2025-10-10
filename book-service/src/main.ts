@@ -27,8 +27,8 @@ async function bootstrap() {
 
   app.use(
     helmet({
-      contentSecurityPolicy: false,
       crossOriginEmbedderPolicy: false,
+      contentSecurityPolicy: false,
     }),
   );
 
@@ -49,54 +49,51 @@ async function bootstrap() {
       transformOptions: {
         enableImplicitConversion: true,
       },
-      disableErrorMessages: configService.get('NODE_ENV') === 'production',
     }),
   );
 
-  if (configService.get('NODE_ENV') !== 'production') {
-    const config = new DocumentBuilder()
-      .setTitle('Book Service API Documentation')
-      .setDescription('Complete REST API documentation for book application.')
-      .setVersion('1.0')
-      .setContact('Book Support', 'https://book.com', 'support@book.com')
-      .setLicense('MIT', 'https://opensource.org/licenses/MIT')
-      .addBearerAuth(
-        {
-          type: 'http',
-          scheme: 'bearer',
-          bearerFormat: 'JWT',
-          name: 'JWT',
-          description: 'Enter JWT token',
-          in: 'header',
-        },
-        'JWT-auth',
-      )
-      .addServer(`http://203.175.11.126:${port}`, 'Nginx')
-      .addServer(`http://localhost:${port}`, 'Local Development')
-      .build();
-
-    const document = SwaggerModule.createDocument(app, config, {
-      deepScanRoutes: true,
-    });
-
-    SwaggerModule.setup('api/docs', app, document, {
-      swaggerOptions: {
-        persistAuthorization: true,
-        docExpansion: 'none',
-        filter: true,
-        showRequestDuration: true,
-        syntaxHighlight: {
-          theme: 'monokai',
-        },
+  const config = new DocumentBuilder()
+    .setTitle('Book Service API Documentation')
+    .setDescription('Complete REST API documentation for book application.')
+    .setVersion('1.0')
+    .setContact('Book Support', 'https://book.com', 'support@book.com')
+    .setLicense('MIT', 'https://opensource.org/licenses/MIT')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Enter JWT token',
+        in: 'header',
       },
-      customSiteTitle: 'Book API Docs',
-      customCss: '.swagger-ui .topbar { display: none }',
-    });
+      'JWT-auth',
+    )
+    //   .addServer(`http://203.175.11.126:${port}`, 'Nginx')
+    .addServer(`http://localhost:${port}`, 'Local Development')
+    .build();
 
-    console.log(
-      `📚 Swagger documentation available at: http://localhost:${port}/api/docs`,
-    );
-  }
+  const document = SwaggerModule.createDocument(app, config, {
+    deepScanRoutes: true,
+  });
+
+  SwaggerModule.setup('api/docs', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true,
+      docExpansion: 'none',
+      filter: true,
+      showRequestDuration: true,
+      syntaxHighlight: {
+        theme: 'monokai',
+      },
+    },
+    customSiteTitle: 'Book API Docs',
+    customCss: '.swagger-ui .topbar { display: none }',
+  });
+
+  console.log(
+    `📚 Swagger documentation available at: http://localhost:${port}/api/docs`,
+  );
 
   app.enableShutdownHooks();
 
