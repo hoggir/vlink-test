@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 export default function SessionExpiredModal() {
   const router = useRouter();
-  const { logout } = useAuth();
+  const { logout, checkAuth } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
@@ -16,8 +16,7 @@ export default function SessionExpiredModal() {
       if (sessionExpired === 'true') {
         // Clear everything and redirect
         sessionStorage.removeItem('sessionExpired');
-        logout(); // Use AuthContext logout to clear user state
-        router.push('/login');
+        logout(); // Use AuthContext logout to clear user state (already redirects)
         return;
       }
     }
@@ -25,12 +24,18 @@ export default function SessionExpiredModal() {
     // Register global function
     if (typeof window !== 'undefined') {
       window.triggerSessionExpired = () => {
-        // Use AuthContext logout to clear everything including user state
-        logout();
+        // Clear tokens and user from localStorage to prevent 401 loop
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
+
+        // Trigger AuthContext to recheck auth state (will set user to null)
+        checkAuth();
 
         // Set flag for refresh detection
         sessionStorage.setItem('sessionExpired', 'true');
 
+        // Show the modal
         setIsOpen(true);
       };
     }
@@ -40,16 +45,15 @@ export default function SessionExpiredModal() {
         window.triggerSessionExpired = null;
       }
     };
-  }, [router, logout]);
+  }, [router, logout, checkAuth]);
 
   const handleGoToLogin = () => {
     setIsOpen(false);
     // Clear session expired flag
     sessionStorage.removeItem('sessionExpired');
-    // Ensure logout is called again
+    // logout() from AuthContext already redirects to /login
+    // No need to call router.push again
     logout();
-    // Redirect to login
-    router.push('/login');
   };
 
   if (!isOpen) return null;
