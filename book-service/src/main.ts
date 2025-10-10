@@ -33,7 +33,7 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: configService.get('CORS_ORIGIN', '*'),
+    origin: configService.get('CORS_ORIGIN') || '*',
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
@@ -69,12 +69,20 @@ async function bootstrap() {
       },
       'JWT-auth',
     )
-    //   .addServer(`http://203.175.11.126:${port}`, 'Nginx')
+    .addServer(`http://203.175.11.126:${port}`, 'VPS Production')
     .addServer(`http://localhost:${port}`, 'Local Development')
     .build();
 
   const document = SwaggerModule.createDocument(app, config, {
     deepScanRoutes: true,
+  });
+
+  // Disable cache for Swagger docs
+  app.use('/api/docs', (req, res, next) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    next();
   });
 
   SwaggerModule.setup('api/docs', app, document, {
