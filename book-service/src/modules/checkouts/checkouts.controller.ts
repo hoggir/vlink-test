@@ -182,8 +182,8 @@ export class CheckoutsController {
     description: 'Checkout not found',
     type: ErrorResponseDto,
   })
-  findOne(@Param('id', DecryptIdPipe) id: number) {
-    return this.checkoutsService.findOne(id);
+  findOne(@Param('id', DecryptIdPipe) id: string) {
+    return this.checkoutsService.findOne(+id);
   }
 
   @Patch(':id/payment-status')
@@ -206,11 +206,11 @@ export class CheckoutsController {
     type: ErrorResponseDto,
   })
   updatePaymentStatus(
-    @Param('id', DecryptIdPipe) id: number,
+    @Param('id', DecryptIdPipe) id: string,
     @Body() updatePaymentStatusDto: UpdatePaymentStatusDto,
   ) {
     return this.checkoutsService.updatePaymentStatus(
-      id,
+      +id,
       updatePaymentStatusDto,
     );
   }

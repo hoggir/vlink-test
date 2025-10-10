@@ -62,7 +62,7 @@ export class PublicBooksController {
     description: 'Book not found or out of stock',
     type: ErrorResponseDto,
   })
-  findOne(@Param('id', DecryptIdPipe) id: number) {
-    return this.publicBooksService.findOne(id);
+  findOne(@Param('id', DecryptIdPipe) id: string) {
+    return this.publicBooksService.findOne(+id);
   }
 }
