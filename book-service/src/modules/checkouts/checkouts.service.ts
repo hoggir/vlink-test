@@ -11,6 +11,7 @@ export class CheckoutsService {
   async findAll(query: QueryCheckoutDto) {
     const {
       status,
+      paymentMethod,
       userId,
       page = 1,
       limit = 10,
@@ -24,6 +25,10 @@ export class CheckoutsService {
 
     if (status) {
       where.paymentStatus = status;
+    }
+
+    if (paymentMethod) {
+      where.paymentMethod = paymentMethod;
     }
 
     if (userId) {
@@ -101,6 +106,7 @@ export class CheckoutsService {
     const updatedCheckout = await this.checkoutsRepository.updatePaymentStatus(
       id,
       updatePaymentStatusDto.paymentStatus,
+      updatePaymentStatusDto.paymentMethod,
     );
 
     return {

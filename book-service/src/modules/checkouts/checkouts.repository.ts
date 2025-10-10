@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
-import { Prisma, PaymentStatus } from '@prisma/client';
+import { Prisma, PaymentStatus, PaymentMethod } from '@prisma/client';
 
 @Injectable()
 export class CheckoutsRepository {
@@ -95,10 +95,20 @@ export class CheckoutsRepository {
     });
   }
 
-  async updatePaymentStatus(id: number, paymentStatus: PaymentStatus) {
+  async updatePaymentStatus(
+    id: number,
+    paymentStatus: PaymentStatus,
+    paymentMethod?: PaymentMethod,
+  ) {
+    const updateData: any = { paymentStatus };
+
+    if (paymentMethod !== undefined) {
+      updateData.paymentMethod = paymentMethod;
+    }
+
     return this.prisma.checkout.update({
       where: { id },
-      data: { paymentStatus },
+      data: updateData,
       include: {
         items: {
           include: {

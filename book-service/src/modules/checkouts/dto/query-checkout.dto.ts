@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional, IsString, IsNumber, Min, IsEnum } from 'class-validator';
 import { Type } from 'class-transformer';
-import { PaymentStatus } from '@prisma/client';
+import { PaymentStatus, PaymentMethod } from '@prisma/client';
 
 export class QueryCheckoutDto {
   @ApiProperty({
@@ -13,6 +13,16 @@ export class QueryCheckoutDto {
   @IsOptional()
   @IsEnum(PaymentStatus)
   status?: PaymentStatus;
+
+  @ApiProperty({
+    description: 'Filter by payment method',
+    required: false,
+    enum: PaymentMethod,
+    example: 'CREDIT_CARD',
+  })
+  @IsOptional()
+  @IsEnum(PaymentMethod)
+  paymentMethod?: PaymentMethod;
 
   @ApiProperty({
     description: 'Filter by user ID',
