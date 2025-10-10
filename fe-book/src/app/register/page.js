@@ -96,7 +96,7 @@ export default function RegisterPage() {
       }
 
       // Redirect to home
-      router.push('/book');
+      router.push('/');
     } catch (error) {
       if (error instanceof ApiError) {
         if (error.errors) {
