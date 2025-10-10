@@ -69,7 +69,7 @@ async function bootstrap() {
       },
       'JWT-auth',
     )
-    .addServer(`http://203.175.11.126:${port}`, 'VPS Production')
+    .addServer(`https://hoggir.cloud:9000`, 'NGINX Reverse Proxy')
     .addServer(`http://localhost:${port}`, 'Local Development')
     .build();
 
