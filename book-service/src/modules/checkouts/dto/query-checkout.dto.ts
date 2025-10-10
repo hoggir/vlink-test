@@ -20,9 +20,8 @@ export class QueryCheckoutDto {
     example: 1,
   })
   @IsOptional()
-  @IsNumber()
-  @Type(() => Number)
-  userId?: number;
+  @IsString()
+  userId?: string;
 
   @ApiProperty({
     description: 'Page number',
