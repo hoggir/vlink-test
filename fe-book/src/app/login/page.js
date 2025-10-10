@@ -71,8 +71,8 @@ export default function LoginPage() {
         authLogin(response.data.user, response.data.accessToken, response.data.refreshToken);
       }
 
-      // Redirect to dashboard or home
-      router.push('/');
+      // Redirect to home
+      router.push('/book');
     } catch (error) {
       if (error instanceof ApiError) {
         if (error.errors) {

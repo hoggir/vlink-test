@@ -95,8 +95,8 @@ export default function RegisterPage() {
         localStorage.setItem('user', JSON.stringify(response.data.user));
       }
 
-      // Redirect to dashboard or home
-      router.push('/');
+      // Redirect to home
+      router.push('/book');
     } catch (error) {
       if (error instanceof ApiError) {
         if (error.errors) {
