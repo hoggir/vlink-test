@@ -145,8 +145,14 @@ export const publicBooksApi = {
 };
 
 export const booksApi = {
-  async getBooks(token) {
-    const response = await fetch(`${API_BASE_URL}/books`, {
+  async getBooks(params = {}, token) {
+    const queryParams = new URLSearchParams();
+    if (params.page) queryParams.append('page', params.page);
+    if (params.limit) queryParams.append('limit', params.limit);
+    if (params.search) queryParams.append('search', params.search);
+
+    const url = `${API_BASE_URL}/books${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+    const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -184,12 +190,25 @@ export const booksApi = {
 
   async updateBook(id, bookData, token) {
     const response = await fetch(`${API_BASE_URL}/books/${id}`, {
-      method: 'PUT',
+      method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify(bookData),
+    });
+
+    return handleResponse(response);
+  },
+
+  async updateStock(id, stockData, token) {
+    const response = await fetch(`${API_BASE_URL}/books/${id}/stock`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(stockData),
     });
 
     return handleResponse(response);
@@ -304,6 +323,124 @@ export const checkoutApi = {
 
   async getCheckoutDetail(id, token) {
     const response = await fetch(`${API_BASE_URL}/customer/checkout/${id}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    return handleResponse(response);
+  },
+};
+
+// Admin Checkouts API
+export const adminCheckoutApi = {
+  async getAllCheckouts(params = {}, token) {
+    const queryParams = new URLSearchParams();
+    if (params.page) queryParams.append('page', params.page);
+    if (params.limit) queryParams.append('limit', params.limit);
+    if (params.status) queryParams.append('status', params.status);
+    if (params.userId) queryParams.append('userId', params.userId);
+
+    const url = `${API_BASE_URL}/checkouts${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    return handleResponse(response);
+  },
+
+  async getCheckoutDetail(id, token) {
+    const response = await fetch(`${API_BASE_URL}/checkouts/${id}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    return handleResponse(response);
+  },
+
+  async getCheckoutStats(token) {
+    const response = await fetch(`${API_BASE_URL}/checkouts/stats`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    return handleResponse(response);
+  },
+
+  async updatePaymentStatus(id, status, token) {
+    const response = await fetch(`${API_BASE_URL}/checkouts/${id}/payment-status`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ paymentStatus: status }),
+    });
+
+    return handleResponse(response);
+  },
+};
+
+// Admin Reports API
+export const reportsApi = {
+  async getSalesReport(params = {}, token) {
+    const queryParams = new URLSearchParams();
+    if (params.page) queryParams.append('page', params.page);
+    if (params.limit) queryParams.append('limit', params.limit);
+    if (params.search) queryParams.append('search', params.search);
+    if (params.sortBy) queryParams.append('sortBy', params.sortBy);
+    if (params.sortOrder) queryParams.append('sortOrder', params.sortOrder);
+
+    const url = `${API_BASE_URL}/reports/sales${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    return handleResponse(response);
+  },
+
+  async getTopSellingBooks(limit = 10, token) {
+    const response = await fetch(`${API_BASE_URL}/reports/top-selling?limit=${limit}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    return handleResponse(response);
+  },
+
+  async getLowStockBooks(threshold = 10, token) {
+    const response = await fetch(`${API_BASE_URL}/reports/low-stock?threshold=${threshold}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    return handleResponse(response);
+  },
+
+  async getOverallStats(token) {
+    const response = await fetch(`${API_BASE_URL}/reports/overall-stats`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

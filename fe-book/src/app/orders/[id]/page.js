@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { checkoutApi } from '@/lib/api';
+import { checkoutApi, adminCheckoutApi } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function OrderDetailPage() {
@@ -13,6 +13,8 @@ export default function OrderDetailPage() {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  const isAdmin = user?.role === 'ADMIN';
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -34,7 +36,15 @@ export default function OrderDetailPage() {
         return;
       }
 
-      const response = await checkoutApi.getCheckoutDetail(params.id, token);
+      let response;
+      if (isAdmin) {
+        // Admin: use admin endpoint
+        response = await adminCheckoutApi.getCheckoutDetail(params.id, token);
+      } else {
+        // Customer: use customer endpoint
+        response = await checkoutApi.getCheckoutDetail(params.id, token);
+      }
+
       setOrder(response.data);
     } catch (error) {
       setError(error.message || 'Failed to fetch order details');
@@ -89,10 +99,21 @@ export default function OrderDetailPage() {
             <svg className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
-            Back to Orders
+            Back to {isAdmin ? 'Checkouts' : 'Orders'}
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900 mt-4">Order Details</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mt-4">
+            {isAdmin ? 'Checkout Details' : 'Order Details'}
+          </h1>
           <p className="mt-2 text-gray-600">Order #{order.referenceNumber}</p>
+          {isAdmin && order.user && (
+            <div className="mt-3 p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
+              <p className="text-sm font-medium text-gray-700">Customer Information</p>
+              <p className="text-lg font-semibold text-indigo-900 mt-1">
+                {order.user.name}
+              </p>
+              <p className="text-sm text-gray-600">{order.user.email}</p>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -230,7 +251,7 @@ export default function OrderDetailPage() {
                   )}
                   <div className="flex justify-between">
                     <span className="text-gray-600">Order Date:</span>
-                    <span className="font-medium">
+                    <span className="font-medium text-gray-900">
                       {new Date(order.createdAt).toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'short',

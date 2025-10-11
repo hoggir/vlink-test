@@ -17,6 +17,16 @@ export function CartProvider({ children }) {
         return;
       }
 
+      // Check if user is admin - don't fetch cart for admin
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        if (user.role === 'ADMIN') {
+          setCartCount(0);
+          return;
+        }
+      }
+
       const response = await cartApi.getCart(token);
       const totalItems = response.data?.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
       setCartCount(totalItems);

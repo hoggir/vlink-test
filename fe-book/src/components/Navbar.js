@@ -11,7 +11,7 @@ export default function Navbar() {
   const router = useRouter();
   const { user, logout: authLogout } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  const { cartCount } = useCart();
+  const { cartCount } = useCart(); // Cart context now handles admin check internally
   const [hasToken, setHasToken] = useState(false);
 
   useEffect(() => {
@@ -58,12 +58,14 @@ export default function Navbar() {
               </Link>
               {hasToken && (
                 <>
-                  <Link
-                    href="/shop"
-                    className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-indigo-600 transition-colors"
-                  >
-                    Shop
-                  </Link>
+                  {user?.role !== 'ADMIN' && (
+                    <Link
+                      href="/shop"
+                      className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-indigo-600 transition-colors"
+                    >
+                      Shop
+                    </Link>
+                  )}
                   <Link
                     href="/orders"
                     className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-indigo-600 transition-colors"
@@ -71,12 +73,20 @@ export default function Navbar() {
                     Orders
                   </Link>
                   {user?.role === 'ADMIN' && (
-                    <Link
-                      href="/books"
-                      className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-indigo-600 transition-colors"
-                    >
-                      Manage Books
-                    </Link>
+                    <>
+                      <Link
+                        href="/books"
+                        className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-indigo-600 transition-colors"
+                      >
+                        Manage Books
+                      </Link>
+                      <Link
+                        href="/reports"
+                        className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-indigo-600 transition-colors"
+                      >
+                        Reports
+                      </Link>
+                    </>
                   )}
                 </>
               )}
@@ -84,30 +94,32 @@ export default function Navbar() {
           </div>
 
           <div className="flex items-center space-x-4">
-            {/* Cart Icon */}
-            <Link
-              href="/cart"
-              className="relative p-2 text-gray-600 hover:text-indigo-600 transition-colors"
-            >
-              <svg
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+            {/* Cart Icon - Only show for customers (not admin) */}
+            {user?.role !== 'ADMIN' && (
+              <Link
+                href="/cart"
+                className="relative p-2 text-gray-600 hover:text-indigo-600 transition-colors"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-                />
-              </svg>
-              {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-600 text-white text-xs font-bold rounded-full flex items-center justify-center">
-                  {cartCount > 9 ? '9+' : cartCount}
-                </span>
-              )}
-            </Link>
+                <svg
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                  />
+                </svg>
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-600 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                    {cartCount > 9 ? '9+' : cartCount}
+                  </span>
+                )}
+              </Link>
+            )}
 
             {/* Only show user info and logout if token exists */}
             {hasToken && (

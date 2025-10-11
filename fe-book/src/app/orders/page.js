@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { checkoutApi } from '@/lib/api';
+import { checkoutApi, adminCheckoutApi } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function OrdersPage() {
@@ -13,6 +13,9 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [pagination, setPagination] = useState({ page: 1, limit: 10 });
+  const [statusFilter, setStatusFilter] = useState('');
+
+  const isAdmin = user?.role === 'ADMIN';
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -23,7 +26,7 @@ export default function OrdersPage() {
     if (user) {
       fetchOrders();
     }
-  }, [user, authLoading, pagination.page]);
+  }, [user, authLoading, pagination.page, statusFilter]);
 
   const fetchOrders = async () => {
     try {
@@ -34,13 +37,26 @@ export default function OrdersPage() {
         return;
       }
 
-      const response = await checkoutApi.getUserCheckouts(pagination.page, pagination.limit, token);
+      let response;
+      if (isAdmin) {
+        // Admin: fetch all checkouts
+        response = await adminCheckoutApi.getAllCheckouts({
+          page: pagination.page,
+          limit: pagination.limit,
+          status: statusFilter || undefined,
+        }, token);
+      } else {
+        // Customer: fetch user's own checkouts
+        response = await checkoutApi.getUserCheckouts(pagination.page, pagination.limit, token);
+      }
+
       setOrders(response.data?.checkouts || []);
 
       if (response.data?.pagination) {
         setPagination(prev => ({
           ...prev,
-          ...response.data.pagination
+          total: response.data.pagination.total,
+          totalPages: response.data.pagination.totalPages,
         }));
       }
     } catch (error) {
@@ -76,9 +92,36 @@ export default function OrdersPage() {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">My Orders</h1>
-          <p className="mt-2 text-gray-600">View your order history and track deliveries</p>
+          <h1 className="text-3xl font-bold text-gray-900">
+            {isAdmin ? 'All Checkouts' : 'My Orders'}
+          </h1>
+          <p className="mt-2 text-gray-600">
+            {isAdmin ? 'Manage all customer checkouts and orders' : 'View your order history and track deliveries'}
+          </p>
         </div>
+
+        {/* Admin Status Filter */}
+        {isAdmin && (
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Filter by Status
+            </label>
+            <select
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setPagination(prev => ({ ...prev, page: 1 }));
+              }}
+              className="block w-full max-w-xs rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            >
+              <option value="">All Status</option>
+              <option value="PENDING">Pending</option>
+              <option value="PAID">Paid</option>
+              <option value="EXPIRED">Expired</option>
+              <option value="CANCELLED">Cancelled</option>
+            </select>
+          </div>
+        )}
 
         {error && (
           <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
@@ -111,7 +154,12 @@ export default function OrdersPage() {
                       <h3 className="text-lg font-semibold text-gray-900">
                         Order #{order.referenceNumber}
                       </h3>
-                      <p className="text-sm text-gray-500">
+                      {isAdmin && order.user && (
+                        <p className="text-sm text-indigo-600 mt-1">
+                          Customer: {order.user.name} ({order.user.email})
+                        </p>
+                      )}
+                      <p className="text-sm text-gray-500 mt-1">
                         {new Date(order.createdAt).toLocaleDateString('en-US', {
                           year: 'numeric',
                           month: 'long',
@@ -128,6 +176,18 @@ export default function OrdersPage() {
 
                   <div className="border-t border-gray-200 pt-4">
                     <div className="flex justify-between items-center">
+                      <div>
+                        {order.paymentMethod && (
+                          <p className="text-sm text-gray-600">
+                            Payment: <span className="font-medium">{order.paymentMethod}</span>
+                          </p>
+                        )}
+                        {isAdmin && order.items && (
+                          <p className="text-sm text-gray-600 mt-1">
+                            Items: <span className="font-medium">{order.items.length}</span>
+                          </p>
+                        )}
+                      </div>
                       <div className="text-right">
                         <p className="text-2xl font-bold text-indigo-600">
                           ${parseFloat(order.totalAmount || 0).toFixed(2)}
